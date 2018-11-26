@@ -65,7 +65,7 @@ public class TestableLogAnalyzer extends LogAnalyzerUsingFactory {
 }
 ```
 
-### trigger 測試
+### 測試
 裡面的 `FakeExtensionManager` 就是 stub 工人
 ```java
 /**
