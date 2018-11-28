@@ -5,7 +5,7 @@ date: 2018-11-28 14:05:16
 categories: ['misc']
 tags:
 ---
-### 維護 changelog
+### 維護 Changelog
 每個團隊的維護策略不一樣, 這篇只是我找來參考用的
 [https://keepachangelog.com/zh-TW/0.3.0/](https://keepachangelog.com/zh-TW/0.3.0/) 
 
