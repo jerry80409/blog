@@ -6,7 +6,7 @@ categories: ['java8']
 tags: ['base64']
 ---
 ### Base64 
-java8 支援 `Base64.Decoder`, `Base64.Encoder`
+java8 支援 `Base64.Decoder`, `Base64.Encoder`, [API docs](https://docs.oracle.com/javase/8/docs/api/java/util/Base64.html)
 ```java
 final Base64.Decoder decoder = Base64.getDecoder();
 final Base64.Encoder encoder = Base64.getEncoder();
