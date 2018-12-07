@@ -173,7 +173,7 @@ mvn clean dependency:copy-dependencies package
 ### Jacoco plugin
 是 **archetype-quickstart-jdk8** 模板裡面的其中一個 plugin, 在 travis 的環境底下會自動執行
 * 在 `validate` phase 會做 `mvn jacoco:prepare-agent`, 
-* 在 `test phase` 會做 `mvn jacoco:report`, 
+* 在 `test` phase 會做 `mvn jacoco:report`, 
 * 等同於底下這行指令
 ```bash
 mvn jacoco:prepare-agent test jacoco:report
