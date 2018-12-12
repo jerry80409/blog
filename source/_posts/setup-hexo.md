@@ -38,7 +38,7 @@ sans-serif()
 其他細節我忘了 XD。
 
 ### Github plugin
-這個套件用來把 blog hosting 到 Github 上面
+[hexo-deployer-git](https://github.com/hexojs/hexo-deployer-git) 這個套件用來把 blog hosting 到 Github 上面
 ```bash
 cd ~/blog
 npm install hexo-deployer-git --save
@@ -65,7 +65,7 @@ hexo d
 ```
 
 ### Rss plugin (option)
-如果希望其他人可以用 Rss 瀏覽你的 blog 的話可以考慮安裝一下這個 plugin。我自己有遇到 `PCDATA invalid Char value 8` [Issue](https://github.com/hexojs/hexo-generator-feed/issues/35) 還沒處理。
+[hexo-generator-feed](https://github.com/hexojs/hexo-generator-feed), 如果希望其他人可以用 Rss 瀏覽你的 blog 的話可以考慮安裝一下這個 plugin。我自己有遇到 `PCDATA invalid Char value 8` [Issue](https://github.com/hexojs/hexo-generator-feed/issues/35) 還沒處理。
 ```bash
 npm install hexo-generator-feed --save
 ```
