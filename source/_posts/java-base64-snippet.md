@@ -2,8 +2,8 @@
 title: Java8 base64
 cover: /img/home-bg.jpg
 date: 2018-11-28 13:45:49
-categories: ['java8']
-tags: ['base64']
+categories: ['java']
+tags: ['java', 'base64']
 ---
 ### Base64 
 java8 支援 `Base64.Decoder`, `Base64.Encoder`, [API docs](https://docs.oracle.com/javase/8/docs/api/java/util/Base64.html)

@@ -2,7 +2,7 @@
 title: Maven 新手教學
 cover: /img/home-bg.jpg
 date: 2018-11-30 13:54:55
-categories: ['java8']
+categories: ['java']
 tags: ['java', 'maven']
 ---
 ### Overview

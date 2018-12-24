@@ -2,8 +2,8 @@
 title: 微框架 owner-boilerplate 介紹
 cover: /img/home-bg.jpg
 date: 2018-11-28 13:08:09
-categories: ['java8']
-tags: ['owner-boilerplate']
+categories: ['java']
+tags: ['java', 'owner-boilerplate']
 ---
 ![owner-boilerplate](/img/owner-boilerplate/owner-aeonbits.png)
 ### Owner boilerplate

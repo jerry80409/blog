@@ -69,7 +69,7 @@ nvm install stable
 
 ### Mysql
 ```bash
-brew  install mysql
+brew install mysql
 brew services start mysql            # start mysql service
 brew cask install tableplus          # mysql gui, support mysql_8.0
 brew cask install sequel-pro         # mysql gui
