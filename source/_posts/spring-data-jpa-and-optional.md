@@ -3,7 +3,7 @@ title: Spring-data JPA 搭配 Optional 的使用
 cover: /img/home-bg.jpg
 date: 2018-12-24 17:25:36
 categories: ['java']
-tags: ['java']
+tags: ['java', 'spring-data']
 ---
 ### Optional Class
 這是 java8 才有的 class, 一樣是用容器的概念 (container) 來封裝一個 [value-base](https://docs.oracle.com/javase/8/docs/api/java/lang/doc-files/ValueBased.html) 的 class, 無法直接讓你取得 value 的狀態, 而是需要透過 `.get()` 的方式取得, 或是透過 `.isPresent()` 來檢查是否 non-null。在 JPA select 資料的時候超好用的。我自己覺得寫得很棒的一篇 [Tony blog](http://blog.tonycube.com/2015/10/java-java8-4-optional.html)。
