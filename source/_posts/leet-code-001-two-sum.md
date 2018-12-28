@@ -2,7 +2,7 @@
 title: leet-code-001-two-sum
 cover: /img/home-bg.jpg
 date: 2018-12-12 12:50:45
-categories: ['leetcode']
+categories: ['misc']
 tags: ['leetcode']
 ---
 ### Test

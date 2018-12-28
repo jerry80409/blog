@@ -2,7 +2,7 @@
 title: leet-code-021-merge-two-sorted-lists
 cover: /img/home-bg.jpg
 date: 2018-12-12 12:51:36
-categories: ['leetcode']
+categories: ['misc']
 tags: ['leetcode']
 ---
 ### Test

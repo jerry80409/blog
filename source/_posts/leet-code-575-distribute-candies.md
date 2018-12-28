@@ -2,7 +2,7 @@
 title: leet-code-575-distribute-candies
 cover: /img/home-bg.jpg
 date: 2018-11-27 14:49:18
-categories: ['leetcode']
+categories: ['misc']
 tags: ['leetcode']
 ---
 ### Quests

@@ -2,7 +2,7 @@
 title: codesignal-almost-increasing-sequence
 cover: /img/home-bg.jpg
 date: 2018-12-26 11:41:07
-categories: ['codesignal']
+categories: ['misc']
 tags: ['codesignal']
 ---
 ### Pazzle
