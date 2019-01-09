@@ -9,7 +9,7 @@ tags: misc
 最近試著在蒐集一些看起來有點用途的資料, Google Trends 看起來是一個 “滿有價值” 的資料平台, 是 Google 蒐集的全球趨勢資料, 包含最近流行的關鍵字, 關鍵字與關鍵字的比較, etc., 但 Google 並沒有提供相關的 API 介面, 所以要取得資料的做法我第一個想到的是 Crawler, 於是順手找了一下大神的開源專案, 左看右看上看下看, 都覺得太複雜不順手XD。
 
 ### Hack Fun
-剛好讀到一篇很有趣的文章 hacking the google trends api, 文章內容提到了幾個有趣的 resource
+剛好讀到一篇很有趣的文章 [hacking the google trends api](http://techslides.com/hacking-the-google-trends-api), 文章內容提到了幾個有趣的 resource
 
 這是 2014 年的 Resource
 * [Google Trends? Visualization](https://trends.google.com/trends/hottrends/visualize?pn=p1)
@@ -52,7 +52,7 @@ hl: Location 或是 Language
 tz: timezone 
 ns: ??
 可以得到, 像這樣的資料
-![hacking-result-json](google-trends-hacking-json.png)
+![hacking-result-json](/img/google-trends-hacking/google-trends-hacking-json.png)
 
 ### That’s Rock
 簡單地用 Retrofit2 + Okhttp3 做個接口(沒更新了)
