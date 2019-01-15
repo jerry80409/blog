@@ -1,5 +1,5 @@
 ---
-title: leet-code-535-encode-and-eecode-tinyurl
+title: leet-code-535-encode-and-decode-tinyurl
 cover: /img/home-bg.jpg
 date: 2019-01-09 19:25:31
 categories: ['misc']
