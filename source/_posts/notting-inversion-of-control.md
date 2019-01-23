@@ -2,7 +2,7 @@
 title: Inversion Of Control 學習筆記
 cover: /img/home-bg.jpg
 date: 2019-01-11 13:42:30
-categories: ['misce']
+categories: ['misc']
 tags: ['inversion-of-control']
 ---
 ### Summary 

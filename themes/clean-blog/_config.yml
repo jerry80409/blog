@@ -34,7 +34,7 @@ google_analytics: UA-57149152-4
 addthis:
 
 # set your own favicon
-favicon:
+favicon: /img/favicon.ico
 
 # Social Accounts
 twitter_url:
