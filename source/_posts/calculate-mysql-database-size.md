@@ -103,6 +103,6 @@ SELECT LENGTH('hello_world')
 ```
 
 ### Ref
-* [MySql 5.7 Docs - https://dev.mysql.com/doc/refman/5.7/en/tables-table.html](https://dev.mysql.com/doc/refman/5.7/en/tables-table.html)
-* [mkyong, calculate the mysql database size - https://www.mkyong.com/mysql/how-to-calculate-the-mysql-database-size/](https://www.mkyong.com/mysql/how-to-calculate-the-mysql-database-size/)
-* [chartio - https://chartio.com/resources/tutorials/how-to-get-the-size-of-a-table-in-mysql/](https://chartio.com/resources/tutorials/how-to-get-the-size-of-a-table-in-mysql/)
+* MySql 5.7 Docs - [https://dev.mysql.com/doc/refman/5.7/en/tables-table.html](https://dev.mysql.com/doc/refman/5.7/en/tables-table.html)
+* mkyong, calculate the mysql database size - [https://www.mkyong.com/mysql/how-to-calculate-the-mysql-database-size/](https://www.mkyong.com/mysql/how-to-calculate-the-mysql-database-size/)
+* chartio - [https://chartio.com/resources/tutorials/how-to-get-the-size-of-a-table-in-mysql/](https://chartio.com/resources/tutorials/how-to-get-the-size-of-a-table-in-mysql/)
