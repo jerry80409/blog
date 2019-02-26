@@ -3,7 +3,7 @@ title: Spring Boot JPA (Hibernate) 入門
 cover: /img/home-bg.jpg
 date: 2019-01-24 11:58:20
 categories: ['spring-boot']
-tags: ['spring-boot', 'spring-data']
+tags: ['spring-boot', 'spring-data', 'jpa']
 ---
 ### Spring Data
 Spring Data 是 Spring 的資料（data , model）處理套件的總稱, 從 Spring data 著手, 比較容易知道 Spring 在資料面的生態系, 底層可搭配這些, 守備範圍很廣, 細節就看 [文件](https://spring.io/projects/spring-data).
@@ -40,7 +40,7 @@ ACID 是在設計 Transaction 的重要準則, 但有時候很難兼顧...
 * TCL: Transaction Control Language, 做 transaction 操作的, `COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION`
   
 ### Hibernate DDL
-我自己的開發習慣, 小專案通常都會用 `Spring Data JPA` 搭配 `Hibernate`, 古老可靠, Hibernate 支援 DDL, 所以就算沒有 [flyway](https://flywaydb.org/) 或 [liquibase](https://www.liquibase.org/) 支援, 資料庫基本的 DDL 也能幫你處理得很好.
+我自己的開發習慣, 小專案通常都會用 `Spring Data JPA` 搭配 `Hibernate`, Hibernate 支援 DDL, 所以就算沒有 [flyway](https://flywaydb.org/) 或 [liquibase](https://www.liquibase.org/) 支援, 資料庫基本的 DDL 也能幫你處理得很好.
 
 hibernate.ddl-auto 幾個參數
 * create: 刪除已存在的 tables, 建立新的 tables
