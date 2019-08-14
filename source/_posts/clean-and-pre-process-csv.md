@@ -87,8 +87,8 @@ I recommed [open-csv](http://opencsv.sourceforge.net/#features), It's a nice and
                     writer.append(currentChar);
                 }
 
-                // 
-                if (currentChar==',') {
+                // count comm and check new line status
+                if (currentChar == ',') {
                     countComm++;
                     if (countComm == commInLine) {
                         countComm = 0;
@@ -100,6 +100,15 @@ I recommed [open-csv](http://opencsv.sourceforge.net/#features), It's a nice and
             }
         }
     }
+```
+
+### Final data
+```
+"id","title","member","msg"
+"1","title1","eric","Hello, I'm Eric."
+"2","title2","john","Hello, Eric, I have a question about your work, plz contact me "
+"3","title3","mike","This is Mike, I just want to say `don’t try to be someone you are not meant to be.`"
+"4","title4","jerry","-"
 ```
 
 
