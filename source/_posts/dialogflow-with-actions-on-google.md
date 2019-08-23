@@ -2,7 +2,7 @@
 title: Dialogflow, Actions on google 學習筆記
 cover: /img/home-bg.jpg
 date: 2018-12-28 10:22:37
-categories: ['dev_ops']
+categories: ['gcp']
 tags: ['gcp', 'dialogflow', 'actions_on_google']
 ---
 ### qwiklabs
