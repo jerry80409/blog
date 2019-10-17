@@ -85,7 +85,7 @@ public void test() {
 }
 ```
 
-### 如果只 override equals 會怎樣?
+### 如果只 override equals 會怎樣 ?
 舉例來說, 假設 Member 只需要 `id` 來做 equlas 判斷, 然後不管其他欄位資料的一致性的話, 就需要去 **override equals()**
 ```java
 @Override

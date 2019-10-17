@@ -182,21 +182,12 @@ LISTENER =
 lsnrctl
 
 LSNRCTL> reload
-連線至 (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=0.0.0.0)(PORT=1521)))
-命令順利完成
+
+LSNRCTL> stop
 
 LSNRCTL> start
-TNS-01106: 已啟動名稱為 LISTENER 的監聽器
 
 LSNRCTL> status
-連線至 (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=0.0.0.0)(PORT=1521)))
-監聽器的狀態
-...
-
-監聽端點摘要...
-  (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=0.0.0.0)(PORT=1521)))
-
-...
 
 ```
 
