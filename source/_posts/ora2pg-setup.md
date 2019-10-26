@@ -152,6 +152,13 @@ Creating script export_schema.sh to automate all exports.
 Creating script import_all.sh to automate all imports.
 ```
 
+### Setting ORACLE connection
+```
+ORACLE_DSN	dbi:Oracle:host=localhost;sid=EE;port=1521
+ORACLE_USER	system
+ORACLE_PWD	foobar
+```
+
 ### Export / Import schema
 `--init_project` 提供了兩個方便的 scripts 方便作業 
 * `export_schema.sh` 用來匯出 data objects schema.
