@@ -7,7 +7,7 @@ tags: ['gradle']
 ---
 大部分的 Java 專案通常都會配置 [maven](https://maven.apache.org/) 或是 [gradle](https://gradle.org/) 來做專案管理, 這兩個工具的角色就類似 PHP 的 [composer](https://getcomposer.org/) 或是 nodejs 的 [npm](https://www.npmjs.com/), 可以用來協助建置專案, 套件依賴管理, 建立 task 模組做 deploy 或 testing。
 
-選用 maven 或是 gradle 端看團隊成員的狀況, 如果有熟悉 Kotlin 或是 Groovy 選用 gradle 會比較好一點, 但 2 者都不會太難入門 (我自己覺得啦 XD), maven 雖然比較老派, 但一些套件比較穩定。
+選用 maven 或是 gradle 端看團隊成員的狀況, 如果有熟悉 Kotlin 或是 Groovy 選用 gradle 會比較好一點, gradle 的優勢是可以更彈性的在 `build.gradle` 透過 Groovy 或是 Kotlin 撰寫一些自動化的邏輯, 這在做不同類型的整合測試很方便; maven 雖然比較老派, 而且 xml 在大型專案會變得很噁心, 但因為歷史悠久相對的參考資源與 plugin 較豐富。
 
 ---
 ## Install
@@ -96,7 +96,7 @@ Executed doLast block!
 > During this phase the project objects are configured. The build scripts of all projects which are part of the build are executed.
 
 ### Execution
-gradle 決定 task 的 subset(**doFirst**, **doFirst**), 經過 configuration 階段後再去執行。
+gradle 決定 task 的 subset(**doFirst**, **doLast**), 經過 configuration 階段後再去執行。
 > Gradle determines the subset of the tasks, created and configured during the configuration phase, to be executed. The subset is determined by the task name arguments passed to the gradle command and the current directory. Gradle then executes each of the selected tasks.
 
 所以在上面的執行範例中, 看到 `Hello World` 會在 `Configure project` 階段就被執行, 所以在寫 task 的時候 **要注意這個 task 要在哪個 phases 被執行**。
