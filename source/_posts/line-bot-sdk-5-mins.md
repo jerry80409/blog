@@ -7,7 +7,7 @@ tags: ['line-bot-sdk', 'spring-boot']
 ---
 
 ## [LINE BOT JAVA SDK](https://github.com/line/line-bot-sdk-java)
-寫點騙人氣的文章, [LINE BOT JAVA SDK](https://github.com/line/line-bot-sdk-java) 是我 Follow 很久的專案, 把 Source code 看過一次會學到很多東西, Servlet dispatch, API Client (OKHttp3 + Retrofit2), token 封裝等等, 使用 SDK 來開發的話, 大約 5mins 就可以把簡單的 LINE Server Side 的流程架設完畢。
+寫點騙人氣的文章, [LINE BOT JAVA SDK](https://github.com/line/line-bot-sdk-java) 是我 Follow 很久的專案, 把 Source code 看過一次會學到很多東西, Servlet dispatch, API Client (OKHttp3 + Retrofit2), token 封裝等等, 使用 SDK 來開發的話, 大約 5mins 就可以把簡單的 LINE Server Side 的流程架設完畢。
 
 ## Steps
 * Intellij 是我目前用最順手的工具, 先用 Intellij + [Spring boot initializr](https://start.spring.io/) 快速建立一個 gradle 專案吧  
