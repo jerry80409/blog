@@ -7,7 +7,8 @@ tags: ['java', 'owner-boilerplate']
 ---
 ![owner-boilerplate](/img/owner-boilerplate/owner-aeonbits.png)
 ### Owner boilerplate
-[Owner boilerplate](http://owner.aeonbits.org/docs/welcome/) 是我自己還滿喜歡用的一個微框架, 適合維運在 aws lambda 服務, 如果你的專案有複雜的 config propertities, 如: mysql connection info, redis connection info, aws setting, etc. 有的沒的, 後端宅宅通常都要處理一大堆的服務, 就很推薦用這個, 可以幫你把那些設定整理的很乾淨, 還有支援 config 的 [hot reload](http://owner.aeonbits.org/docs/reload/), 很棒吧!
+[Owner boilerplate](http://owner.aeonbits.org/docs/welcome/) 是我自己還滿喜歡用的一個微框架, 適合維運在 aws lambda 服務, 如果你的專案有複雜的 config properties, 如: mysql connection info, redis connection info, aws setting, etc. 有的沒的, 後端宅宅通常都要處理一大堆的服務, 就很推薦用這個, 
+可以幫你把那些設定整理的很乾淨, 還有支援 config 的 [hot reload](http://owner.aeonbits.org/docs/reload/), 很棒吧!
 
 ### Setup
 java8 support
