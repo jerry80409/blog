@@ -1,16 +1,17 @@
 ---
-name: Tails Azimuth
-avatar: /static/images/avatar.png
-occupation: Professor of Atmospheric Science
-company: Stanford University
-email: address@yoursite.com
-twitter: https://twitter.com/Twitter
-linkedin: https://www.linkedin.com
-github: https://github.com
+name: ChienYu
+avatar: /static/images/avatar.jpg
+github: https://github.com/jerry80409
+--occupation: Professor of Atmospheric Science
+--email: address@yoursite.com
+--twitter: https://twitter.com/Twitter
+--linkedin: https://www.linkedin.com
 ---
 
-Tails Azimuth is a professor of atmospheric sciences at the Stanford AI Lab. His research interests includes complexity modelling of tailwinds, headwinds and crosswinds.
+# Hello, I'm ChienYu
 
-He leads the clean energy group which develops 3D air pollution-climate models, writes differential equation solvers, and manufactures titanium plated air ballons. In his free time he bakes raspberry pi.
+目前在金融單位擔任後端工程師, 平時以 Java, Spring boot, React 為主要開發工具. 喜歡用工具拼湊一些東西, 或是寫一些爬蟲解決生活上與工作上的問題.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.
+這個 Blog 採用 [tailwind-nextjs-starter-blog](https://github.com/timlrx/tailwind-nextjs-starter-blog) 打造, 它是個很棒的專案, 目前發佈在 [vercel](https://vercel.com/).
+
+如果有任何想法, 都歡迎與我聯繫交流.
