@@ -1,0 +1,355 @@
+---
+title: '為什麼要推薦 AssertJ'
+date: '2022-01-21'
+tags: ['java', 'testing']
+draft: false
+summary: '簡單介紹 AssertJ 特性, 並且與其他測試工具做個簡單比對.'
+layout: PostLayout
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Ref
+
+文章內的資訊參考整理自
+
+- AssertJ 官方: https://assertj.github.io/doc/
+- 更多範例: https://github.com/assertj/assertj-examples/tree/main/assertions-examples/src/test/java/org/assertj/examples
+
+## 為什麼要推薦 AssertJ
+
+[Junit]([https://junit.org/junit5/) 算是已經非常通用且主流的測試工具, 通常寫起來會像這樣.
+
+```java:JunitExample.java
+// 需要依據測試的類型, 引入各式各樣的斷言
+import static org.junit.Assert.*;
+
+class JunitExample {
+
+  private final Calculator calculator = new Calculator();
+
+  @Test
+  void addition() {
+    assertEquals(2, calculator.add(1, 1));
+  }
+}
+```
+
+而用 [AssertJ](https://assertj.github.io/doc/) 改寫上面的案例, 會像這樣.
+
+```java:AssertJExample.java
+// 只需要引入 Assertions, 統一接口做斷言
+import org.assertj.core.api.Assertions;
+
+class AssertJExample {
+
+  private final Calculator calculator = new Calculator();
+
+  @Test
+  void addition() {
+    assertThat(calculator.add(1, 1)).isEqualTo(2);
+  }
+}
+```
+
+我自己喜歡以 `Assertions.assertThat()` 的方式起手, 細節請 [參閱 assumptions 章節](https://assertj.github.io/doc/#assertj-core-assumptions) 幾乎可以放入任意要驗證的型別, 包含 Java8 的 Optional 或是 Collection 集合類的物件, 後續再接驗證的邏輯細節,
+由左而右的開發與閱讀習慣, AssertJ 會來得更容易理解一點, 且寫法較貼近 lambda 寫法方式. 若要同時使用 Junit 與 AssertJ 也是沒問題的, 兩者並沒有互相衝突.
+
+## 描述測試
+
+為了讓測試報告更明確, 可已透過 `as()` 來撰寫描述, 讓實際結果呈現於報告上.
+
+```java
+@Test
+public void test() {
+  final BigDecimal act = BigDecimal.TEN;
+
+  Assertions.assertThat(act)
+    .as("check the value(%s) is 100", act.toPlainString())
+    .isEqualByComparingTo("100");
+}
+```
+
+```shell
+org.junit.ComparisonFailure: [check the value(10) is 100]
+Expected :100
+Actual   :10
+```
+
+## 適應 JAVA8 Lambda 特性
+
+支援 Stream, Filter, Mapping, Flat 等特性, 就簡單地挑 Filter 做介紹了, 其他用法就如同 Lambda 的 Streaming 的寫法差不多.
+
+### Filter on Assertions
+
+就如同 Java8 的 `Filter(Predicate)` 可以簡單的檢核 Collection 結果.
+
+```java:Member.java
+@Setter
+@Getter
+@AllArgsConstructor
+class Member {
+
+  private String name;
+
+  private Integer age;
+}
+```
+
+```java
+@Test
+public void test() {
+  final Member sam = new Member("Sam", 18);
+  final Member susan = new Member("Susan", 20);
+  final Member eric = new Member("Eric", 14);
+  final List<Member> members = Arrays.asList(sam, susan, eric);
+
+  Assertions.assertThat(members)
+    .filteredOn(member -> member.getAge() > 18)
+    .doesNotContainNull()
+    .as("Only Susan age is gather than 18")
+    .containsOnly(susan);
+}
+```
+
+### Optional Assertions
+
+也支援 `Optional`.
+
+```java
+@Test
+public void test() {
+  final Optional<String> opt = Optional.of("hello");
+
+  Assertions.assertThat(opt)
+    .isPresent()
+    .isNotEmpty()
+    .as("the option is existed and has value `hello`")
+    .hasValue("hello")
+    .containsSame("hello");
+}
+```
+
+## 針對 POJO 的 Assertions
+
+在測試 POJO 物件 (單純的貧血模型, key value 物件) 時, 會需要很瑣碎的把每個欄位拿出來做驗證. 在早期我可能會用 `Map` 把 Pojo 物件重新包過做驗證, 或是非常暴力的直接轉為 JASON 做字串驗證, 但這都不是我理想中的方式.
+
+就拿上面的 `Member.java` 做案例, 來展示如何用 AssertJ 更無痛的做驗證.
+
+```java:JunitExample.java
+@Test
+public void test() {
+  final Member sam = new Member("Sam", 18);
+
+  // 需要逐一針對欄位做 get 再做驗證
+  Assert.assertEquals("Sam", sam.getName());
+  Assert.assertEquals(18, sam.getAge().intValue());
+}
+```
+
+在 POJO 的驗證上, 我會比較偏向 test1 的方式, 針對重點欄位驗證就好. 然 AssertJ 同時也提供了另一種 Recursive 每一個欄位的方式做驗證. Recursive 的前提是每個欄位都有提供 `get()`
+的方式做存取.
+
+```java:AssertJExample.java
+@Test
+public void test1() {
+  final Member sam = new Member("Sam", 18);
+
+  Assertions.assertThat(sam)
+    .extracting("name", "age")
+    .doesNotContainNull()
+    .containsExactly("Sam", 18);
+}
+
+@Test
+public void test2() {
+  final Member sam = new Member("Sam", 18);
+
+  // 透過另一個 Pojo 對欄位做驗證
+  final Member expected = new Member("Sam", 18);
+
+  // Recursive each fields on class
+  Assertions.assertThat(sam)
+    .isEqualToComparingFieldByFieldRecursively(expected);
+}
+```
+
+## 例外測試 Exception assertions
+
+反向測試, 也是測試中很重要的一個環節, 在一個 Exception Stack 中, 可以針對 Root Cause 做細節的驗證.
+
+```java:DemoService.java
+class DemoService {
+
+  static void call() {
+    // throw the nested exception
+    throw new IllegalStateException("something wrong", new NullPointerException("invoke the NPE"));
+  }
+}
+```
+
+```java
+@Test
+public void test() {
+  final Throwable throwable = Assertions.catchThrowable(DemoService::call);
+
+  Assertions.assertThat(throwable)
+    .isInstanceOf(IllegalStateException.class)
+    .hasMessageContaining("something wrong")
+    .hasRootCauseExactlyInstanceOf(NullPointerException.class)
+    .hasStackTraceContaining("invoke the NPE");
+}
+```
+
+## Soft Assertions
+
+若有更複雜的邏輯, 推薦用 Soft Assertions, 它可以讓你一次走完流程, 最終再回報哪些細節測試失敗, 不會因為某個驗證就中斷.
+
+```java
+@Test
+public void test() {
+  final Member sam = new Member("Sam", 18);
+  final Member susan = new Member("Susan", 20);
+  final Member eric = new Member("Eric", 14);
+  final List<Member> members = Arrays.asList(sam, susan, eric);
+
+  final SoftAssertions softly = new SoftAssertions();
+
+  // assert is fail
+  softly.assertThat(members)
+    .hasSize(2)
+    .extracting("name")
+    .contains("John");
+
+  softly.assertAll();
+}
+```
+
+錯誤報告會這樣提示
+
+```shell
+The following 2 assertions failed:
+1)
+Expected size:<2> but was:<3> in:
+...
+
+2)
+Expecting:
+ <["Sam", "Susan", "Eric"]>
+to contain:
+ <["John"]>
+but could not find:
+ <["John"]>
+```
+
+## 自定義 Assertions
+
+自定義的 Assertions 需繼承 `AbstractAssert<SELF, ACTUAL>`, 採用泛型 GenericType 的設計.
+
+- `SELF` 用來定義驗證器本身.
+- `ACTUAL` 用來定義要驗證的目標物件.
+
+一樣擴充上面的 Member 案例來做解釋.
+
+```java:Member.java
+@Setter
+@Getter
+@AllArgsConstructor
+class Member {
+
+  private String name;
+
+  private Integer age;
+
+  // 新增 email 欄位
+  private String email;
+}
+```
+
+```java:MemberAssert.java
+public class MemberAssert extends AbstractAssert<MemberAssert, Member> {
+
+  public MemberAssert(Member actual, Class<?> selfType) {
+    super(actual, selfType);
+  }
+
+  public MemberAssert(Member actual) {
+    super(actual, MemberAssert.class);
+  }
+
+  /**
+   * 我自己喜歡 Assumptions 這種風格, 所以希望驗證以這個方法作為入口去接後續的操作.
+   */
+  public static MemberAssert assertThat(Member actual) {
+    return new MemberAssert(actual);
+  }
+
+  /**
+   * Check the Member name should not be null.
+   */
+  public MemberAssert nameShouldNotBeNull() {
+    // check the instance is not null
+    isNotNull();
+
+    if (Strings.isNullOrEmpty(actual.getName())) {
+      failWithMessage("Check the Member name should not be null");
+    }
+
+    return this;
+  }
+
+  /**
+   * Check the Member age is positive.
+   */
+  public MemberAssert ageIsPositive() {
+    // check the instance is not null
+    isNotNull();
+
+    if (actual.getAge() <= 0) {
+      failWithMessage("Check the Member(%s) age should be Positive", actual.getName());
+    }
+
+    return this;
+  }
+
+  /**
+   * Check the Member email format is ok.
+   */
+  public MemberAssert checkEmailFormat() {
+    // check the instance is not null
+    isNotNull();
+
+    // 簡單地用 org.apache.commons.validator 驗證 XD
+    if (!EmailValidator.getInstance().isValid(actual.getEmail())) {
+      failWithMessage("Check the Member(%s) email(%s) format has wrong", actual.getName(), actual.getEmail());
+    }
+
+    return this;
+  }
+}
+```
+
+```java
+public void test() {
+  final Member sam = new Member("Sam", 18, "sam@email.com");
+
+  // assert is pass
+  MemberAssert.assertThat(sam)
+    .nameShouldNotBeNull()
+    .ageIsPositive()
+    .checkEmailFormat();
+
+  // assert is fail
+  final Member susan = new Member("Susan", 20, "susan");
+  MemberAssert.assertThat(susan)
+    .nameShouldNotBeNull()
+    .ageIsPositive()
+    .checkEmailFormat();
+}
+```
+
+錯誤訊息就會如同上面定義的顯示
+
+```shell
+Check the Member(Susan) email(susan) format has wrong
+```
