@@ -1,0 +1,83 @@
+---
+title: 'Husky 進行 pre-commit 發生錯誤'
+date: '2023-03-11'
+tags: ['husky', 'pre-commit', 'git']
+draft: false
+summary: '紀錄排除 husky pre commit hook exited with code 127 的錯誤'
+layout: PostLayout
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Ref
+
+- Husky: https://typicode.github.io/husky/#/?id=command-not-found
+
+## 錯誤發生情境
+
+再調整 [tailwind-nextjs-starter-blog](https://github.com/timlrx/tailwind-nextjs-starter-blog) 的過程中, 用 [Fork](https://git-fork.com/) 工具進行 git
+commit 的時候遇到以下錯誤, 但用 git 指令一切都正常.
+
+按照錯誤訊息的描述, 是在執行 **.husky/pre-commit** 這個指令的時候, 讀取專案內 _.husky/pre-commit_ 的第 4 行發生 `npx command not found`.
+
+```shell
+.husky/pre-commit: line 4: npx: command not found
+husky - pre-commit hook exited with code 127 (error)
+```
+
+## 先說解法
+
+老實說, 這是我第一次接觸 [Husky](https://typicode.github.io/husky) 就拿著關鍵字亂查了一下. 才知道 Husky 是一個專門處理 git hook 的工具. 而問題發生的原因, 依據
+[Command-not-found](https://typicode.github.io/husky/#/?id=command-not-found) 的描述, **npx** 沒辦法執行, 有可能是 node 環境發生問題.
+推測大概是系統環境變數無法正常被 Fork 工具存取到. 於是我試著按照建議, 另外建立了 **~/.huskyrc** 確實解決了我的問題.
+
+```shell:.huskyrc
+# ~/.huskyrc
+# This loads nvm.sh and sets the correct PATH before running hook
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+```
+
+上面的腳本大概解釋如下
+
+- 第一部分 `-s "$NVM_DIR/nvm.sh"` 會檢查 `$NVM_DIR` 目錄下的 _nvm.sh_ 檔案是否存在.
+- 第二部分 `&& \. "$NVM_DIR/nvm.sh` 中的 **&&** 是一個邏輯運算符，它表示當第一部分條件成立時才會執行第二部分. `\.` 會執行 nvm.sh 檔案中的程式碼, 這是一個 Shell Script.
+
+## Why
+
+事實上, 我確定我有上面的相關設定, 我是用 **NVM** 管理我的 Node 版本沒錯. 依據 NVM 的教學, 我在 `~/.bash_profile` 裡面有了這段設定.
+
+```shell:~/.bash_profile
+# nvm
+export NVM_DIR="$HOME/.nvm"
+. "/usr/local/opt/nvm/nvm.sh"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads
+```
+
+我另外分別於 `~/.bash_profile` 與 `~/.zshrc` 加入 `echo` 確認過載入順序是
+
+1. ~/.zshrc
+2. ~/.bash_profile
+
+於是我實驗性地把這段重新搬到 `~/.zshrc`.
+
+```shell
+# 將環境變數重新載入到 terminal session 中
+source ~/.zshrc
+```
+
+但在 iTerm 上 git commit 可以正常執行 pre-commit.
+
+```shell
+✔ Preparing...
+✔ Hiding unstaged changes to partially staged files...
+✔ Running tasks...
+✔ Applying modifications...
+✔ Restoring unstaged changes to partially staged files...
+✔ Cleaning up...
+[master cc61e3e] test
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+```
+
+我仍不明白為何這樣可以解決我的問題, 於是另外搜尋到這個 [Github 上的討論](https://github.com/fork-dev/Tracker/issues/1227).
