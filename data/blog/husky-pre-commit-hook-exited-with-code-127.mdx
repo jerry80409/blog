@@ -12,6 +12,8 @@ layout: PostLayout
 ## Ref
 
 - Husky: https://typicode.github.io/husky/#/?id=command-not-found
+- dev-fork-issue-1227: https://github.com/fork-dev/Tracker/issues/1227
+- dev-fork-issue-1261: https://github.com/fork-dev/Tracker/issues/1261
 
 ## 錯誤發生情境
 
@@ -31,7 +33,7 @@ husky - pre-commit hook exited with code 127 (error)
 [Command-not-found](https://typicode.github.io/husky/#/?id=command-not-found) 的描述, **npx** 沒辦法執行, 有可能是 node 環境發生問題.
 推測大概是系統環境變數無法正常被 Fork 工具存取到. 於是我試著按照建議, 另外建立了 **~/.huskyrc** 確實解決了我的問題.
 
-```shell:.huskyrc
+```shell:~/.huskyrc
 # ~/.huskyrc
 # This loads nvm.sh and sets the correct PATH before running hook
 export NVM_DIR="$HOME/.nvm"
@@ -60,24 +62,62 @@ export NVM_DIR="$HOME/.nvm"
 1. ~/.zshrc
 2. ~/.bash_profile
 
-於是我實驗性地把這段重新搬到 `~/.zshrc`.
+於是我實驗性地把這段重新搬到 `~/.zshrc`, 再重新將 ~/.zshrc 載入到 session 中, 仍然是可以在 terminal 上執行 git commit 但仍無法在 Fork 上 commit.
+
+### [fork-dev Issue 1227](https://github.com/fork-dev/Tracker/issues/1227)
+
+在這個討論串內, 確實有提到 Fork 不支援使用者的環境變數. Fork 主要是驅動環境的 git 去做 git hook 相關作業. 所以沒辦法執行 husky 確實不是 Fork 的問題. 但這個討論也讓我更確定是因為
+Fork 沒有載入到 **NPM** 的相關環境變數, 主因是用了 NVM 管理 NPM. 然而我沒辦法在 Fork 上確認這件事 XD.
 
 ```shell
-# 將環境變數重新載入到 terminal session 中
-source ~/.zshrc
+# 確認 npm 位置
+which npm
+
+# 我的 npm 路徑
+/Users/user_name/.nvm/versions/node/v18.12.1/bin/npm
 ```
 
-但在 iTerm 上 git commit 可以正常執行 pre-commit.
+### [fork-dev Issue 1261](https://github.com/fork-dev/Tracker/issues/1261)
+
+然而在這個討論串內, 提到用指令打開 Fork `open -a Fork`, 會讓 Fork 繼承 Parent process, 也就是會繼承下這個指令時的環境變數. 在這個階段下打開 Fork 又可以 commit 了.
+
+但我自己的習慣都是用 Spotlight 來開啟相關工具, 所以按照討論串的建議, 在 **~/.husky/pre-commit** 檔案內, 加入 `echo $PATH`, 展開來就是這樣, 間接的確認到 Fork 的環境變數了.
 
 ```shell
-✔ Preparing...
-✔ Hiding unstaged changes to partially staged files...
-✔ Running tasks...
-✔ Applying modifications...
-✔ Restoring unstaged changes to partially staged files...
-✔ Cleaning up...
-[master cc61e3e] test
- 1 file changed, 0 insertions(+), 0 deletions(-)
+/usr/local/Cellar/git/2.32.0/libexec/git-core
+/Applications/Fork.app/Contents/Resources/git-instance/git-lfs
+/Applications/Fork.app/Contents/Resources/gitflow-avh
+/opt/homebrew/bin
+/usr/local/bin
+/usr/bin
+/bin
+/usr/sbin
+/sbin
 ```
 
-我仍不明白為何這樣可以解決我的問題, 於是另外搜尋到這個 [Github 上的討論](https://github.com/fork-dev/Tracker/issues/1227).
+裡面當然沒有 NVM 的 NPM 相關環境變數 XD, 也沒有 **~/.zshrc** 與 **~/.bash_profile**.
+
+## 總結
+
+### 解法 1
+
+採用 **~/.huskyrc** 作法
+
+```shell:~/.huskyrc
+# ~/.huskyrc
+# This loads nvm.sh and sets the correct PATH before running hook
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+```
+
+### 解法 2
+
+用 terminal 打開 Fork, `open -a Fork`.
+
+### 解法 3
+
+把當下的 node 相關指令, 用建立捷徑的方式 (symbolic link), 把 node 相關的 bin 連結到 `/usr/local/bin`
+
+```shell
+ln -s $(which node) /usr/local/bin/node
+```
