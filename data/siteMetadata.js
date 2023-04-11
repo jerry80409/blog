@@ -2,7 +2,7 @@ const siteMetadata = {
   title: 'PAWS',
   author: 'ChienYu',
   headerTitle: 'PAWS',
-  description: 'A blog created with Next.js and Tailwind.css',
+  description: '隨意紀錄一些學習心得, 想法, 工具',
   language: 'zh-TW',
   theme: 'system', // system, dark or light
   siteUrl: 'https://blog-jerry80409.vercel.app',
@@ -11,7 +11,7 @@ const siteMetadata = {
   image: '/static/images/avatar.png',
   socialBanner: '/static/images/twitter-card.png',
   // email: 'address@yoursite.com',
-  github: 'https://github.com',
+  github: 'https://github.com/jerry80409',
   // twitter: 'https://twitter.com/Twitter',
   // facebook: 'https://facebook.com',
   // youtube: 'https://youtube.com',
