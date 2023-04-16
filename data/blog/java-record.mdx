@@ -1,0 +1,140 @@
+---
+title: 'Java Record'
+date: '2023-03-30'
+tags: ['java', 'record']
+draft: false
+summary: '簡單介紹 Java Record'
+layout: PostLayout
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Ref
+
+相關知識與觀念來自於我在這幾篇文章的閱讀
+
+- JEPS359 宣告: https://openjdk.org/jeps/359
+- Record 與 Lombok 的對照比較: https://www.baeldung.com/java-record-keyword
+- Record 更進階的使用情境: https://jfeatures.com/blog/records
+
+## Record 要解決什麼問題
+
+在 JDK14 的 [JEPS-359](https://openjdk.org/jeps/359) 的宣告中, 說明了 **Record** 這個關鍵字, 其目的主要是為了解決傳統 Java Bean 或是 Value Object
+而產生需花費大量力氣撰寫的 boilerplate, boilerplate 指的是諸如 class 內的 `equals()`, `hashCode()`, `toString()`, `setter()`, `getter()`
+的這些枯燥重複的代碼, 雖然現代的 IDE 幾乎可以自動產生上述的對應程式碼, 但仍對閱讀上有一定的負荷.
+
+## Record Futures
+
+**Record** 跟 **Enum** 一樣, 是一種 Java 類型的宣告, 具有以下特質.
+
+1. Record 內的所有成員都是 `final` 的狀態, 也就是在建構階段, 所有的成員狀態就會被定下來, 為不可變 (immutable) 的狀態, 在非同步的資料處理上, 確保一定的線程安全.
+2. 所有成員都具備 `public` 可被外部讀取的方法 (下面範例會簡單說明).
+3. Record 本身具有隱式 final 特性, 不可被繼承擴展, 也不能被宣告為 `abstract`.
+4. Record 本身會自動實現 `equals()` 與 `hashCode()`, 若成員的 status 皆相同則其 `equals()` 且有相同的 `hashCode()`.
+5. 若要在 Record 定義宣告建構以外的成員, 則必須是 `static` 狀態.
+6. Record 可以像 class 一樣可以實作 `interface`, 也能透過 new 來實例化.
+
+## Demo
+
+Record 為 JDK14 之後的特性, 而我採用 JDK17 作為示範, 主要是因為 JDK17 為 LTS 的版本. 範例裡, 會定義 Point 這個 Record, 用來做 2D 座標資料使用, 滿符合 Record 的使用情境.
+
+### Compact canonical constructor
+
+範例的 Record 會使用 **Compact canonical constructor** 的寫法, 所以會先解釋這部分.
+
+傳統的 Constructor 會像是這樣, 但因為 Record 的特性, 所有成員都是 `final` 的狀態必須有初始狀態 (如果是 js 的話, 就是 `const` 這個關鍵字).
+
+```java:Point.java
+record Point(int x) {
+  Point (int x) {
+    if (x < 0) {
+      x = 0;
+    }
+    this.x = x;
+  }
+}
+```
+
+傳統的方式會透過 this 去重新把外部參數設定到 instance 本身, 而 Java 為了要盡量適應現代的寫法, 於是讓 Constructor 可以更精簡. 讓開發者可以更專注於邏輯上, 且省去枯燥乏味的 `this.x = x;` 這種指定, 可以寫成以下.
+
+```java:Point.java
+record Point(int x) {
+
+  // 省去了建構子上的參數括弧
+  Point {
+    if (x < 0) {
+      x = 0;
+    }
+    // 省去了將參數指定到本身
+    // this.x = x;
+  }
+}
+```
+
+### Point Record
+
+隨便寫個 x, y 座標不可以大於 (100, 100) 的檢核. 然後採用 **Compact canonical constructor**. 所以只會看到檢核.
+
+```java:Point.java
+record Point(int x, int y) {
+  // Compact canonical constructor
+  Point {
+    // Simple validation
+    if (x > 100 || y > 100) {
+      throw new IllegalStateException("x, y must be less than 100");
+    }
+  }
+
+  int sum() {
+    return x + y;
+  }
+}
+```
+
+簡單的使用 AssertJ 測試一下
+
+```java:PointTest.java
+@Test
+void test() {
+  final Point point = new Point(0, 0);
+
+  Assertions.assertThat(point).isInstanceOf(Point.class);
+  Assertions.assertThat(point.getClass().isRecord()).isTrue();  // true
+  Assertions.assertThat(point.x()).isZero();
+  Assertions.assertThat(point.y()).isZero();
+  Assertions.assertThat(point.sum()).isZero();
+
+  final Point another = new Point(0, 0);
+  Assertions.assertThat(point).isEqualTo(another); // true
+
+  System.out.println(point);  // Point[x=0, y=0]
+}
+```
+
+### 使用 Tuples?
+
+Java 本身其實也能實現像 python [Tuples](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences) 這樣的資料結構.
+寫起來可能會像是這樣的 Generic Type 結構.
+
+```java
+class Tuples<First, Second, Third> {
+  private First first;
+  private Second second;
+  private Third third;
+}
+```
+
+用起來就會長這樣
+
+```java
+final Tuples<Integer, Integer, Integer> tuples = new Tuples<>();
+```
+
+這就有一個很明顯的缺點, 就是當要處理的欄位越多, 你就要寫越多種 Generic type(Fourths, Fives, etc.), 這時候我就很羨慕 Python. 且在 JEPS359 裡面就提到幾個 Tuples
+的小缺點, 可能不是那麼符合 Java 的精神 (但裡面說的那些缺點大概都能用 Generic type 做到就是了 XD).
+
+## Summary
+
+會開始看 Record 主要是因為 DDD 裡面的 Value Object 很適合用 Record 這樣的類型來定義, Record 確實簡化了不少開發作業, 且也具備更好的語意與可讀性. 而 Lombok 雖然有支援像是
+`@Getter(AccessLevel.NONE)` 或是 `@Value` 這樣的功能, 且也能彈性的加入自己想要的一般 class 的成員宣告或是被繼承, 相較之下 Lombok 彈性了不少, 兩者各有其優勢. 若要認真區分,
+我會在單純的 Setter Getter 的物件設計上採用 Record, 但若是考量到物件抽象繼承, 我還是會採用 Lombok.
