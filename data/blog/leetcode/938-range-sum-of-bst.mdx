@@ -1,0 +1,219 @@
+---
+title: '938-range-sum-of-bst'
+date: '2023-04-11'
+tags: ['leetcode']
+draft: false
+summary: 'leet code 解題, 938-range-sum-of-bst'
+layout: PostSimple
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Quiz
+
+Given the root node of a binary search tree, return the sum of values of all nodes with value between L and R (inclusive).
+
+The binary search tree is guaranteed to have unique values.
+
+Example:
+
+```
+Input: root = [10,5,15,3,7,null,18], L = 7, R = 15
+Output: 32
+Explanation: Nodes 7, 10, and 15 are in the range [7, 15]. 7 + 10 + 15 = 32.
+
+Input: root = [10,5,15,3,7,13,18,1,null,6], L = 6, R = 10
+Output: 23
+Explanation: Nodes 6, 7, and 10 are in the range [6, 10]. 6 + 7 + 10 = 23.
+```
+
+## 解題思路
+
+題目是 **二元樹** 問題, 會給一個 Root Node, 與 L, R, 必須回傳 L 到 R (包含) 之間所有 Node 的加總.
+
+Example1 的二元樹會長這樣, 指定 L(7) 與 R(15), 也就是 7 + 10 + 15 = 23.
+
+```
+     10
+    /  \
+  5     15
+ / \      \
+3   7     18
+```
+
+### 二元樹
+
+1. 是每個 Node 最多只有 2 個 Branch.
+2. left Node < Root Node, 左節點永遠小於 Root.
+3. right Node > Root Node, 右節點永遠大於 Root.
+
+而 TreeNode 是解題所必須使用的資料結構.
+
+```java:TreeNode.java
+public class TreeNode {
+   int val;
+   TreeNode left;
+   TreeNode right;
+
+   TreeNode() {}
+   TreeNode(int val) { this.val = val; }
+   TreeNode(int val, TreeNode left, TreeNode right) {
+     this.val = val;
+     this.left = left;
+     this.right = right;
+   }
+ }
+```
+
+動手之前, 先簡化思考, 用最小二元樹 [10, 5, 15], L=7, R=15, 應該會是 10 + 15 = 25.
+
+```
+  10
+ /  \
+5   15
+```
+
+### Step
+
+| step | root | left | right | low | high | 保留 |
+| ---- | ---- | ---- | ----- | --- | ---- | ---- |
+| 1    | 10   | 5    | 15    | 7   | 15   | yes  |
+| 2    | 5    |      |       | 7   | 10   | no   |
+| 3    | 15   |      |       | 10  | 15   | yes  |
+
+1. 從 Root 開始走訪, 10 介於 7 ~ 15, 故保留.
+2. 因為 10 介於 7 ~ 15, 所以左右節點都要判斷,
+3. 因二元樹特性, 左邊節點最大不會超過 10, 故要判斷左邊節點(5) 是否有介於 7 ~ 10, 故不保留.
+4. 因二元樹特性, 右邊節點最小不會小於 10, 故要判斷右邊節點(15) 是否也介於 10 ~ 15, 故保留.
+5. 最後把保留下來的加總輸出.
+6. 因題目只給 rangeSumBST 這個方法, 且資料結構是 tree, 所以大概要用遞迴的方式, 遞迴的處理重點在於如何收斂遞迴.
+
+## Testing
+
+先把測試寫好, 然後慢慢推斷出解法.
+
+```java:RangeSumBstTest.java
+@Test
+// 最小二元素測試
+void test1() {
+  // treeNode[10, 5, 15], l = 7, r = 15
+  final TreeNode treeNode = new TreeNode(10, new TreeNode(5), new TreeNode(15));
+  final int l = 7;
+  final int r = 15;
+
+  // expected 10 + 15 = 25;
+  final int act = solution.rangeSumBST(treeNode, l, r);
+  Assertions.assertThat(act).isEqualTo(25);
+}
+
+// 題目測試 1
+@Test
+void test2() {
+  // treeNode[10, 5, 15, 3, 7, null, 18], l = 7, r = 15
+  final TreeNode treeNode = new TreeNode(10,
+    new TreeNode(5, new TreeNode(3), new TreeNode(7)),
+    new TreeNode(15, null, new TreeNode(18)));
+  final int l = 7;
+  final int r = 15;
+
+  // expected 7 + 10 + 15 = 32
+  final int act = solution.rangeSumBST(treeNode, l, r);
+  Assertions.assertThat(act).isEqualTo(32);
+}
+
+// 題目測試 2
+@Test
+void test3() {
+  // [10,5,15,3,7,13,18,1,null,6], l=6, h=10
+  final TreeNode treeNode = new TreeNode(10,
+    new TreeNode(5,
+      new TreeNode(3, new TreeNode(1), null),
+      new TreeNode(7, new TreeNode(6), null)),
+    new TreeNode(15, new TreeNode(13), new TreeNode(18)));
+  final int l = 6;
+  final int r = 10;
+
+  // expected 6 + 7 + 10 = 23
+  final int act = solution.rangeSumBST(treeNode, l, r);
+  Assertions.assertThat(act).isEqualTo(23);
+}
+```
+
+```java:RangeSumBst.java
+public int rangeSumBST(TreeNode root, int low, int high) {
+  int sum = 0;
+
+  // 葉節點 [5, null, null], 沒辦法繼續往下走就直接回傳 0, 終止遞迴
+  if (root == null) {
+    return 0;
+  }
+
+  if (root.val >= low && root.val <= high) {
+    // 保留 root.val
+    sum += root.val;
+
+    // 繼續往下走訪
+    sum += rangeSumBST(root.left, low, root.val);
+    sum += rangeSumBST(root.right, root.val, high);
+    }
+    return sum;
+}
+```
+
+解題思路感覺看起來沒有錯, 但在 Test2 的時候失敗了, 因為上面的寫法只走了一個階層的 Tree. 在 [5, 3, 7] 這顆子樹時邏輯會錯誤.
+
+```
+ 5
+/ \
+3 7
+```
+
+修正 `if` 區塊內對於遞迴處理的部分.
+
+```java:RangeSumBst.java
+public int rangeSumBST(TreeNode root, int low, int high) {
+  if (root == null) {
+    return 0;
+  }
+
+  int sum = 0;
+  // root 介於 low ~ high, 保留 root 值, 做加總
+  if (root.val >= low && root.val <= high) {
+    sum += root.val;
+  }
+
+  // root 介於 low ~ high, 表示左子樹裡面可能有 node 是介於 low ~ root 之間
+  if (root.val > low) {
+    sum += rangeSumBST(root.left, low, root.val);
+  }
+
+  // root 介於 low ~ high, 表示右子樹裡面可能有 node 是介於 root ~ high 之間
+  if (root.val < high) {
+    sum += rangeSumBST(root.right, root.val, high);
+  }
+
+  return sum;
+}
+```
+
+另一種做法, 官方解答的 Stack 解, 可以不用遞迴, 記憶體用量會比較小一點, 但時間會長一點.
+
+```java
+public int rangeSumBST(TreeNode root, int low, int high) {
+  int ans = 0;
+  Stack<TreeNode> stack = new Stack();
+  stack.push(root);
+  while (!stack.isEmpty()) {
+    TreeNode node = stack.pop();
+    if (node != null) {
+      if (low <= node.val && node.val <= high)
+        ans += node.val;
+      if (low < node.val)
+        stack.push(node.left);
+      if (node.val < high)
+        stack.push(node.right);
+    }
+  }
+  return ans;
+}
+```
