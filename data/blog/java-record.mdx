@@ -136,5 +136,5 @@ final Tuples<Integer, Integer, Integer> tuples = new Tuples<>();
 ## Summary
 
 會開始看 Record 主要是因為 DDD 裡面的 Value Object 很適合用 Record 這樣的類型來定義, Record 確實簡化了不少開發作業, 且也具備更好的語意與可讀性. 而 Lombok 雖然有支援像是
-`@Getter(AccessLevel.NONE)` 或是 `@Value` 這樣的功能, 且也能彈性的加入自己想要的一般 class 的成員宣告或是被繼承, 相較之下 Lombok 彈性了不少, 兩者各有其優勢. 若要認真區分,
-我會在單純的 Setter Getter 的物件設計上採用 Record, 但若是考量到物件抽象繼承, 我還是會採用 Lombok.
+`@Setter(AccessLevel.NONE)` 或是 `@Value` 這樣的功能, 且也能彈性的加入自己想要的一般 class 的成員宣告或是被繼承, 相較之下 Lombok 彈性了不少, 兩者各有其優勢. 若要認真區分,
+我會在單純的 Getter 的物件設計上採用 Record, 但若是考量到物件抽象繼承, 我還是會採用 Lombok.
