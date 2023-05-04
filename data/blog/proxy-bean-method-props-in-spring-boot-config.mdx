@@ -1,0 +1,69 @@
+---
+title: 'ProxyBeanMethod props in Spring boot Configuration'
+date: '2023-05-04'
+tags: ['spring-boot']
+draft: false
+summary: '設定 SSH Login 不用輸入密碼'
+layout: PostLayout
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Ref
+
+- Spring Boot (Java Doc): https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Configuration.html
+
+## Overview
+
+在 Spring boot 的 `@Configuration` 配置中, 常常看到 `proxyBeanMethods = false` 但並不是很理解. Spring boot 的文件內並沒有特別說明,
+從原始碼註解與字面上大概知道會是把 proxy 的功能關閉. 於是 Google 相關資訊, 大致上是用於管理 Spring boot Configuration 內的 Bean
+依賴關係.
+
+## Example
+
+下面範例, 有個 Student Bean 與 Teacher Bean, 而 Teacher 又依賴 Student. 故應 Spring boot 啟動時, 應該先注入 Student 再注入 Teacher 才不會發生問題.
+
+```java
+@Configuration(proxyBeanMethods = false)
+public class MyConfiguration {
+
+  @Bean
+  public Student student() {
+    System.out.println("init student bean");
+    return new Student();
+  }
+
+  @Bean
+  public Teacher teacher() {
+    System.out.println("init teacher bean");
+    return new Teacher(student());
+  }
+}
+```
+
+但實際上會是
+
+```bash
+init student bean
+init teacher bean
+init student bean
+```
+
+Student Bean 被初始了兩次, 這可能是個大問題, 如果這個 Student 是資料庫相關配置, 可能會對 DB 連線兩次, 依據配置的複雜度 (可能又被使用在 Flyway
+Configuration 內, 會對 DB 做更多次連線). 這會導致 Spring boot 啟動緩慢, 且依據情境可能會產生一些 Spring boot context 相關錯誤.
+
+上面的寫法在 IntelliJ 裡面會提示,
+
+> Method annotated with @Bean is called directly in a @Configuration where proxyBeanMethods set to false. Set proxyBeanMethods to true or use dependency injection.
+
+指示你應該採用 `proxyBeanMethods = true` 由 Spring boot 幫你處理.
+
+或是改為注入的方式.
+
+```java
+@Bean
+public Teacher teacher(Student student) {
+  System.out.println("init teacher");
+  return new Teacher(student);
+}
+```
