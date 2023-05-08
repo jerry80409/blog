@@ -1,0 +1,102 @@
+---
+title: 'Server 端基本 Security 知識'
+date: '2021-08-29'
+tags: ['security']
+draft: false
+summary: 'Server 端基本 Authentication, Authorization, JWT, Key Pairs, Digest, Crypto 知識'
+layout: PostLayout
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Ref
+
+- MDN(同源政策): https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
+- HMAC 介紹: https://www.biaodianfu.com/hmac.html
+- Github SSH 說明: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
+- letsencrypt 運作方式: https://letsencrypt.org/zh-tw/how-it-works/
+
+## Authentication (認證)
+
+簡單的理解為身份驗證, 當 user 表明自己是誰, 試著思考電腦怎麼知道他是真的 user ? 傳統認證一般來說都是透過一組帳號密碼, 與某個資料儲存服務 (資料庫, LDAP, Memory, OAuth) 做比對完成驗證的.
+
+## Authorization (授權)
+
+當確認為 user 之後, user 自然而然會因為業務需求, 而需要對資源 (數據, 服務, 運算) 做操作了, 一般來說授權會定義幾個角色, 例如: admin (最高管理者), user (一般使用者), anonymous
+(匿名使用者).
+
+## 概念跟知識
+
+Http 是 **無狀態的**, 無狀態的意思是 user 看了你的第一個頁面, 再看第二個頁面, server 不會知道 user 是否是同一個人, 為了處理這種問題, server 會幫 user 建立一個 **session
+(會話)**.
+
+每個 session 都表示與一個 user 的通訊過程, 因此是 **有期限的**, server 為了讓 user 下次來頁面可以拿著這個 session 來讓 server 辨識, 所以會把 session 放在 http
+header 的 cookie 欄位裡面給 user (也有其他方式, 這邊只做簡單介紹), 而 user 瀏覽器接收到 http 裡面的 cookie 的時候, 就會儲存在瀏覽器上面, 如此一來 server 就能夠辨識 user
+上一次的狀態.
+
+但類似手機 APP 需要存取 Server 的資源的時候, 或是網頁前後端分離之後或是跨服務(Microservice), 前端頁面的東西, 可能不在同一個 domain 下 (簡單理解為不在同一個空間吧), 就難以處理
+Session/Cookie.
+
+前端的程式碼通常是要透過瀏覽器呈現給 user, 但瀏覽器有個 **[same-origin policy (同源政策)](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy)**, 針對跨網域的操作多了一些防護, 不同 domain 的資源不能彼此交換 (如果 session 在另一個
+domain 被送到 server, user 的狀態就不再安全了), 因此前後端分離的作法, 會藉由其他諸如 token 的方式來解決 session 跨服務的問題.
+
+token 可以簡單的理解為入場券, 入場券簡單來說就是將 session 概念, cookie 技術結合起來, 放在 Http Header Authorization 上, 因此 token 不適合放入敏感訊息, 且 token
+也容易被偽造, 為此 token 需要簽名 **Sign** 的技術, 來驗證其是否為正確 server 與正常的 user 產生的資訊.
+
+Token 的種類很多, 在工作的過程中也實作過各種公司自己定義出來的 token, 簡單到有
+
+```
+Hash(user info + 有效時間) -> 產生亂數 -> Server 端比對 User 與當下的時間
+```
+
+上面的 token 只要隨便複製到某一台 Server 或是被釣魚網站擷取, 或是在通訊過程中被類似 Wireshark 攔截, 就破防了. 但這是公司基於各種考量所決策的 (客戶有高檔的防火牆, 只在內網運作, 或是給很少錢,
+很少時間, 或是客戶很有自信不會被釣魚, 社交工程, etc.), 所以也不好做什麼批判.
+
+或是採用主流的 **JWT** 規格, JWT 我理解是後面這些概念的統稱, 應該算是
+
+```
+JWS(簽名規則), JWE(加密規則), JWK(金鑰規則), JWA(演算規則), JWT(token 內容規則)
+```
+
+不想解釋得太複雜, 只看 JWT 它就是一串代表某個資訊的亂數, 格式通常像這樣, 透過 "." 隔開.
+
+```
+[標頭 header].[內容 claim].[簽名 sign]
+```
+
+在這些工具背後, 都需要理解一點 **密碼學**, Digest 與 Key.
+
+### Digest
+
+Digest 最主要用途就是讓資訊不可讀, 像是 MD5, CRC 系列, SHA 系列, etc. 將訊息雜湊 (hash) 產生一串不可預測的資訊(在現代的計算能力已經不算安全了 (如, 彩虹表 **rainbow table**,
+類似一本字典可以查閱任何字元排列組出來的雜湊結果), 所以雜湊會更進一步的採用 SALT 的亂數加到雜湊裡面, 進而提高複雜度. 簡單的理解為
+
+```
+salt + hash 的技術 -> HMAC (Hash Message Authentication Code)
+```
+
+這篇可能可以幫助你更了解 HMAC 的原理
+
+https://www.biaodianfu.com/hmac.html
+
+### Key Pairs
+
+這邊只簡單介紹非對稱金鑰 Public Key 與 Private Key (比較主流). 產生金鑰的過程有很多種, 有使用憑證 (Certification) 產生的金鑰, 或是依據簡單資訊產生的隨機金鑰.
+
+- **Private key** 通常要自己保存好, 要加密的資料通常也會用它做簽名 (證明你是正確的 user, 不是路人假裝你).
+- **Public key** 會上傳給其他人或單位, 用這把 Key 辨識資料有你的簽名, 進而解開你加密的資訊.
+
+舉例, Github 為了確保 SSH 通訊過程是安全的, 會要求你要上傳 `ed25519`(早期用 RSA 4096 bits) 的 public key.
+
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh
+
+而憑證可以代表一個組織, 一個人或經過第三方公正產生的一份證書 (如: SSL 憑證), 證書產生過程中就需要有 Keys, 代表有一定的授權可以對組織, 個人或網站內容做加密或是簽名的動作, 進而達到加密通訊.
+
+舉例, Let's encrypt, 用於網站的 Https 傳輸協定上
+
+https://letsencrypt.org/zh-tw/how-it-works/
+
+> Let’s Encrypt 透過公鑰辨識伺服器。當憑證管理軟體首次向 Let’s Encrypt 溝通時，它會產生一組公私金鑰對，並向 Let’s Encrypt CA 證明伺服器管理一個或多個網域。這個過程與傳統憑證頒發流程相似：透過建立帳號，接著向該帳號添加網域。
+
+> 流程一開始，憑證管理軟體會向 Let’s Encrypt CA 詢問，它需要做甚麼才能證明自己擁有 example.com。Let’s Encrypt CA
+> 會對該網域提出一個或多個考驗。憑證管理軟體可以透過不同方式來證明對網域的控制權，例如，CA 會讓憑證管理軟體指定：
