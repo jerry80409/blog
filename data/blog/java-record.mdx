@@ -127,7 +127,7 @@ class Tuples<First, Second, Third> {
 用起來就會長這樣
 
 ```java
-final Tuples<Integer, Integer, Integer> tuples = new Tuples<>();
+final Tuples<First, Second, Third> tuples = new Tuples<>();
 ```
 
 這就有一個很明顯的缺點, 就是當要處理的欄位越多, 你就要寫越多種 Generic type(Fourths, Fives, etc.), 這時候我就很羨慕 Python. 且在 JEPS359 裡面就提到幾個 Tuples

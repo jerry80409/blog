@@ -17,7 +17,8 @@ layout: PostLayout
 
 ## 錯誤發生情境
 
-再調整 [tailwind-nextjs-starter-blog](https://github.com/timlrx/tailwind-nextjs-starter-blog) 的過程中, 用 [Fork](https://git-fork.com/) 工具進行 git
+在調整 [tailwind-nextjs-starter-blog](https://github.com/timlrx/tailwind-nextjs-starter-blog) 的過程中, 用 [Fork]
+(https://git-fork.com/) 工具進行 git
 commit 的時候遇到以下錯誤, 但用 git 指令一切都正常.
 
 按照錯誤訊息的描述, 是在執行 **.husky/pre-commit** 這個指令的時候, 讀取該腳本的的第 4 行發生 `npx command not found`.
@@ -81,7 +82,8 @@ which npm
 
 然而在這個討論串內, 提到用指令打開 Fork `open -a Fork`, 會讓 Fork 繼承 Parent process, 也就是會繼承下這個指令時的環境變數. 在這個階段下打開 Fork 又可以 commit 了.
 
-但我自己的習慣都是用 Spotlight 來開啟相關工具, 所以按照討論串的建議, 在 **~/.husky/pre-commit** 檔案內, 加入 `echo $PATH`, 展開來就是這樣, 間接的確認到 Fork 的環境變數了.
+但我自己的習慣都是用 Mac Spotlight 來開啟相關工具, 所以按照討論串的建議, 在 **~/.husky/pre-commit** 檔案內, 加入 `echo $PATH`, 展開來就是這樣, 間接的確認到 Fork
+的環境變數了.
 
 ```shell
 /usr/local/Cellar/git/2.32.0/libexec/git-core
