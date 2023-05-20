@@ -1,0 +1,145 @@
+---
+title: 'Design Pattern - Builder'
+date: '2023-05-19'
+tags: ['design-pattern']
+draft: false
+summary: 'Builder 設計模式'
+layout: PostLayout
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Ref
+
+- RefactoringGuRu: https://refactoringguru.cn/design-patterns/builder/java/example
+- Lombok: https://projectlombok.org/features/Builder
+- 滿特別的 Consumer 與 Builder pattern: https://www.cnblogs.com/Joynic/p/13220858.html
+
+## Builder pattern 適合解決什麼問題
+
+我通常會在處理一些欄位常常需要拼裝的情境下使用, 比如說複雜的保單欄位, 報表欄位, Builder Pattern 可以讓你在程式寫法上, 清楚明白每一個欄位而逐一添加. 在欄位擴增之後, 不會對現有的程式碼造成 Compiler
+錯誤, 但這可能也是它的缺點.
+
+簡單的用設計一台跑車來舉例, 我的思考與設計方式如下.
+
+1. **Car** 應該是一個 **abstract** 的 Class, 它的屬性要可以被各種不同類型的汽車繼承.
+2. **SportCar** 會繼承 Car 的屬性, 但我想透過 Builder pattern 把零件依據需求放入, 未來再擴充跑車零件上會比較彈性.
+
+### 設計草稿
+
+先簡單的把 Engine 與 Wheel 弄成 interface 比較彈性, 但這塊並不是 Builder Pattern 重點, 所以不要太在意.
+
+```java
+// car engine spec
+public interface EngineSpec {
+  String getName();
+}
+
+// wheel spec
+public interface WheelSpec {
+  String getName();
+}
+
+// abstract car
+abstract class Car {
+
+  protected EngineSpec engine;
+
+  protected WheelSpec wheel;
+
+  Car(EngineSpec engine, WheelSpec wheel) {
+    this.engine = engine;
+    this.wheel = wheel;
+  }
+
+  void run() {
+    System.out.println("Run with Engine: " + this.engine.getName());
+    System.out.println("Run with Wheel: " + this.wheel.getName());
+  }
+}
+```
+
+### 預期建造跑車的寫法
+
+先決定好怎麼使用物件, 而這也是 TDD 的主要精神, 在設計的過程中, 先把預期的行為先設計好, 再來完成後續的代碼, 這在開發與設計上非常有用.
+
+```java
+// 因為 interface 只開一個 method 可以簡單這樣寫 XD
+final EngineSpec engineSpec = () -> "Ford Mustang";
+final WheelSpec wheelSpec = () -> "BFGoodrich g-Force T / A KDW 2";
+
+SportCar car = SportCar.builder()
+  .engine(engineSpec)
+  .wheel(wheelSpec)
+  .build();
+
+// 基本的功能
+car.run();
+
+// 跑車的功能
+car.turboRun();
+```
+
+### 設計 Sport Car with Builder
+
+在上面已經設計好物件的使用方式了, 透過 IntelliJ 或一些編輯器, 甚至 AI 就可以快速產生下列程式碼.
+而這段程式碼其實會跟 [Lombok @Builder](https://projectlombok.org/features/Builder) 產生出來的差不多.
+
+```java
+public class SportCar extends Car {
+
+  // 把 construct 設為 private, 讓 SprotCar 無法直接被建構, 都要透過 builder() 來建構
+  private SportCar(EngineSpec engine, WheelSpec wheel) {
+    super(engine, wheel);
+  }
+
+  // static method
+  static SportCarBuilder builder() {
+    return new SportCarBuilder();
+  }
+
+  void turboRun() {
+    System.out.println("Turbo Run with Engine: " + this.engine.getName());
+    System.out.println("Turbo Run with Wheel: " + this.wheel.getName());
+  }
+
+  // builder pattern
+  public static class SportCarBuilder {
+
+    // 這邊的 member 只是為了承接外面的欄位, 轉換給 SportCar 建構用
+    private EngineSpec engine;
+    private WheelSpec wheel;
+
+    SportCarBuilder engine(EngineSpec engineSpec) {
+      this.engine = engineSpec;
+      return this;
+    }
+
+    SportCarBuilder wheel(WheelSpec wheelSpec) {
+      this.wheel = wheelSpec;
+      return this;
+    }
+
+    // 最終產生 Sport Car 的實體
+    SportCar build() {
+      return new SportCar(engine, wheel);
+    }
+  }
+}
+```
+
+### 測試
+
+```bash
+Run with Engine: Ford Mustang
+Run with Wheel: BFGoodrich g-Force T / A KDW 2
+
+Turbo Run with Engine: Ford Mustang
+Turbo Run with Wheel: BFGoodrich g-Force T / A KDW 2
+```
+
+## Summary
+
+會使用 Builder pattern 是我會需要在某些狀態下特別去針對某些欄位做複雜的邏輯檢核, 然而當欄位增加時, 會需要在 **SportCar** 與 **SportCarBuilder** 寫了很多重複性的欄位
+`Getter` 與 `Setter`, 而站在物件設計的思考上, 這些欄位的檢核可能應該要回歸到欄位本身(由 EngineSpec, 與 WheeSpec 去做檢查), 這個困難點在於從小零件, 很難知道整體的狀態作出檢查,
+所以我可能還是會在 Builder 裡面做檢查這件事, 又或者是應該建立出檢查器 Validator 把整台車與相關情境放入檢核器內? 我並沒有一個很完美的答案.
