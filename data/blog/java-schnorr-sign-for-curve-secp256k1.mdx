@@ -1,0 +1,237 @@
+---
+title: 'Java Schnorr signatures for curve secp256k1'
+date: '2023-05-27'
+tags: ['java', 'kotlin', 'schnorr', 'secp256k1', 'crypto', 'nostr']
+draft: false
+summary: ''
+layout: PostLayout
+---
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Ref
+
+- Nostr-NIP01: https://github.com/nostr-protocol/nips/blob/master/01.md
+- nostrino: https://github.com/cashapp/nostrino/
+- Bitconin - secp256k1: https://yhheho.gitbooks.io/bitcoin/content/3/secp256k1.html
+
+## Background
+
+這陣子因為參加了 [AlphaCamp-RISE](https://tw.alphacamp.co/blog/early-riser-review) 的課程, 在實作一套 [NOSTR](https://nostr.com/) 的協定, NOSTR
+簡單來說也是一套去中心化的網路架構 (Peer-to-Peer), 但我對他還不夠瞭解, 沒辦法完整的介紹他. 在實作 NIP-01 階段我就遇到一個棘手的問題, 就是要處理 Crypto.
+
+> Each user has a keypair. Signatures, public key, and encodings are done according to the Schnorr signatures standard for the curve secp256k1.
+>
+> -- Nostr-protocol NIP-01
+
+這段主要是說, 要實作一個 `Schnorr` 簽名, 採用橢圓曲線演算法的 `secp256k1`. 我只粗略地知道 secp256k1 是 Bitcoin 加密的一種算法,
+這個網站 https://yhheho.gitbooks.io/bitcoin/content/3/secp256k1.html 有一些資料解釋.
+
+### JDK17 Unsupported `secp256k1`
+
+在 Oracle JDK17 裏面看到 JAVA 在 JDK17 移除了 `secp256k1`! 但我不確定 OpenJDK 是不是也這樣, 總之我沒繼續在 JDK 這方向.
+
+> Removal of Legacy Elliptic Curves
+>
+> The SunEC provider no longer supports the following elliptic curves that were deprecated in JDK 14.
+>
+> secp112r1, secp112r2, secp128r1, secp128r2, secp160k1, secp160r1, secp160r2,
+> secp192k1, secp192r1, secp224k1, secp224r1, secp256k1, sect1
+>
+> -- from: https://docs.oracle.com/en/java/javase/17/migrate/removed-tools-and-components.html#GUID-D7936F0D-08A9-411E-AD2F-E14A38DA56A7
+
+不放棄的又看了一些資料, 大概知道有這幾個套件可以處理 Crypto 問題, 但都不是我想要的
+
+### Bouncy Castle Crypto
+
+文件非常難讀, 需要懂很多名詞, 果斷放棄
+
+- doc: https://www.bouncycastle.org/documentation.html
+
+### web3j
+
+文件寫了很多 Bitcoin 合約相關的, 沒提到什麼 secp256k1,
+
+- doc: https://docs.web3j.io/4.8.7/quickstart/
+- 在這段程式碼讀到 secp256k1, 但不太好搬移. ref: https://github.com/web3j/web3j/blob/7a4870e6ea62d35c5ab3bcecb90be7195d86ad64/crypto/src/main/java/org/web3j/crypto/Keys.java#L59
+
+### And Then
+
+在這之後我又問了 ChatGPT, 但因為我沒訂閱所以資料很舊, 問到的答案都是錯的, 我開始搜尋那些用 JAVA, Kotlin 跟 Nostr 有關的專案. 找到兩個
+
+- from **@tcheeric**: https://github.com/tcheeric/nostr-java, 模組化的很乾淨
+- from **@cashapp**: https://github.com/cashapp/nostrino/, Kotlin 專案, 也寫的很乾淨.
+
+我後來參考了 **@cashapp** 的 Kotlin 專案, 我沒花太多時間就理解了他, 且 Kotlin 也是 JVM 的語言, 理論上不會有太大的問題.
+
+## Dependencies
+
+**@cashapp** 裡面使用了 `fr.acinq.secp256k1`, [ref](https://github.com/cashapp/nostrino/blob/main/lib/build.gradle.kts#L27-L28)
+
+- github: https://github.com/ACINQ/secp256k1-kmp
+
+> Either the fr.acinq.secp256k1:secp256k1-kmp-jni-jvm dependency which imports all supported platforms.
+>
+> -- from: https://github.com/ACINQ/secp256k1-kmp
+
+這個套件必須依賴 JNI(Java Native Interface), JNI 是用其他語言(C, C++, etc.) 寫出來給 JAVA 呼叫的一個介面. 選用 `secp256k1-kmp-jni-jvm`
+因為要支援多平台, 而 `secp256k1-kmp-jvm:0.10.0` 則是 Kotlin 支援 JVM 的版本.
+
+```groovy
+dependencies {
+    // secp256k1
+    implementation 'fr.acinq.secp256k1:secp256k1-kmp-jvm:0.10.0'
+    runtimeOnly 'fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.10.0'
+
+    // okio for string serialize and hex, sha256 digest convert
+    implementation 'com.squareup.okio:okio:3.3.0'
+}
+```
+
+## Code
+
+這段 Code 也都是依照 **@cashapp** 的設計去改寫為 JAVA 版本的.
+
+```java:Key.java
+public interface Key {
+  /**
+   * encode by key
+   */
+  String encoded();
+
+  /**
+   * for human reading
+   */
+  String hex();
+}
+```
+
+下面就是實作 Secp256k1 PairKeys
+
+Private Key 會用來對 Nostr 的資料做簽名, 或加密.
+
+```java:SecKey.java
+import fr.acinq.secp256k1.Secp256k1;
+import java.util.Arrays;
+import okio.ByteString;
+
+/**
+ * Secret key
+ *
+ * @param key supported byte[] or string, and it knows how to encode and decode itself as hex, base64, and
+ * UTF-8.
+ */
+public record SecKey(ByteString key) implements Key {
+
+  /**
+   * Generated a compress public key.
+   * <p>
+   * The public key format is [x value 32bits, y value 32bits], so the compress is get the x value to public key.
+   *
+   * @return {@link PubKey}
+   */
+  public PubKey pubkey() {
+    return new PubKey(ByteString.of(Arrays.copyOfRange(Secp256k1.Companion.pubKeyCompress(
+      Secp256k1.Companion.pubkeyCreate(key.toByteArray())), 1, 33)));
+  }
+
+  /**
+   * Signature data
+   *
+   * @param payload the data should convert to ByteString
+   * @return sign data.
+   */
+  public ByteString sign(ByteString payload) {
+    return ByteString.of(Secp256k1.Companion.signSchnorr(payload.toByteArray(), key.toByteArray(), null));
+  }
+
+  @Override
+  public String encoded() {
+    // todo Bech32 encode
+    return null;
+  }
+
+  /**
+   * for human reading
+   *
+   * @return hex code
+   */
+  @Override
+  public String hex() {
+    return key.hex();
+  }
+}
+```
+
+Public key 會用來驗證 Nostr 的簽名, 我並沒有實作太多東西, 只是對應 Private key 產生一個物件.
+
+```java:Pubkey.java
+import okio.ByteString;
+
+/**
+ * Public key
+ *
+ * @param key supported byte[] or string, and it knows how to encode and decode itself as hex, base64, and
+ * UTF-8.
+ */
+public record PubKey(ByteString key) implements Key {
+
+  @Override
+  public String encoded() {
+    // we don't use pubkey encode, because pubkey would be upload to others
+    return null;
+  }
+
+  /**
+   * for human reading
+   *
+   * @return hex code
+   */
+  @Override
+  public String hex() {
+    return key.hex();
+  }
+}
+```
+
+## Test
+
+簡單到一個 Nostr 的平台, 隨便產生一把 Keys, 比如說 Nostr rock: https://nostr.rocks/
+
+```yaml
+# fake key
+PRIVATE_KEY: 1d79a6744cd5617a97dbd7220502d35eb99b9d37689439689a7b71ad4e28303a
+PUBLICK_KEY: 1a3731a85dbb00a07b9fdb489a5b4d4bb1df36e12c95cc0aa7ff91747b542217
+```
+
+寫一個測試驗證 private key 是不是能產出 Nostr 要求的 pubkey
+
+```java:TestKey.java
+@Test
+void test() {
+  final SecKey secKey = new SecKey(ByteString.decodeHex(PRIVATE_KEY));
+  final PubKey pubkey = secKey.pubkey();
+  Assertions.assertThat(pubkey.hex()).isEqualTo(PUBLICK_KEY);
+}
+```
+
+## Verify Signature
+
+因為我把 Verify Signature 寫在某個地方了, 簡單擷取出來說明.
+
+```java:VerifyUtils.java
+@UtilsClass
+public class VerifyUtils {
+  /**
+   * 驗證簽名
+   *
+   * @param sig 簽名
+   * @param data 被簽名的資料
+   * @param pubkey pubkey
+   * @return
+   */
+  public boolean verifySign(ByteString sig, ByteString data, ByteString pubkey) {
+    return Secp256k1.Companion.verifySchnorr(sig.toByteArray(), id.toByteArray(), pubkey.toByteArray());
+  }
+}
+```
